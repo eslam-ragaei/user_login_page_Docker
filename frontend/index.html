@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Auth System</h1>
+
+    <div class="card">
+        <h2>Signup</h2>
+        <input id="signup-name" placeholder="Name">
+        <input id="signup-email" placeholder="Email">
+        <input id="signup-password" type="password" placeholder="Password">
+        <button onclick="signup()">Signup</button>
+    </div>
+
+    <div class="card">
+        <h2>Login</h2>
+        <input id="login-email" placeholder="Email">
+        <input id="login-password" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+
+    <!-- <div class="card">
+        <h2>Profile</h2>
+        <button onclick="getProfile()">Get Profile</button>
+    </div> -->
+
+    <div class="output">
+        <h3>Response</h3>
+        <pre id="output"></pre>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

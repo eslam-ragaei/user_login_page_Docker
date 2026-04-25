@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./backend
+    container_name: Back-End_API
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - fronted_net
+      - backend_net
+
+  db:
+    image: postgres:15
+    container_name: postgres_DATABASE
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data 
+    networks:
+      - backend_net
+
+  redis:
+    image: redis:7
+    container_name: redis_cache
+    restart: always
+    networks:
+      - backend_net
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_front
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - fronted_net
+
+volumes:
+  postgres_data:
+
+networks:
+  fronted_net:
+  backend_net:
