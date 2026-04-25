@@ -1,11 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, engine, Base
-from app.user_models import User
-from app.cache import redis_client
-from app.auth import hash_password, verify_password, create_access_token, decode_access_token
-from app.schemas import UserLogin, UserCreate
+from .database import SessionLocal, engine, Base
+from .user_models import User
+from .cache import redis_client
+from .auth import hash_password, verify_password, create_access_token, decode_access_token
+from .schemas import UserLogin, UserCreate
 import json
 
 app = FastAPI()
@@ -29,6 +29,11 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+        
+@app.get("/")
+def health():
+    return {"status": "API Gateway is running"}
 
 # -------------------------------
 # Signup
