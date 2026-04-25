@@ -1,95 +1,165 @@
-# Dockerized Backend System
+# Dockerized Login System
 
-This project demonstrates a full **backend system** using **FastAPI**, **Redis caching**, and **Nginx** as a reverse proxy. The system is fully **containerized with Docker** and orchestrated via **Docker Compose**, showcasing a realistic signup/login workflow.
+A complete Docker-based authentication demo built with:
+- FastAPI backend
+- PostgreSQL database
+- Redis cache
+- Nginx reverse proxy / static frontend server
+- Docker Compose orchestration
 
----
-
-## Features
-
-- **User Authentication**
-  - Signup with name, email, and password
-  - Login with JWT token
-  - Password hashing for security
-- **Protected Profile Endpoint**
-  - Returns user info only with a valid JWT
-  - Redis caching for improved performance
-- **Frontend Integration**
-  - Nginx serves static frontend files (HTML/CSS/JS)
-  - Nginx proxies API requests (`/api/...`) to backend
-- **Dockerized**
-  - Multi-stage Dockerfile for backend (smaller image, non-root user)
-  - Separate containers for backend, Redis, and Nginx
-  - Isolated Docker networks for backend and frontend
-- **Best Practices**
-  - Backend runs as non-root user
-  - Limited client upload size
-  - Efficient caching via Redis
+This repository combines a simple signup/login API with a static frontend served through Nginx and a backend service that caches user profile data in Redis.
 
 ---
 
-## Architecture Diagram
-Frontend (HTML/CSS/JS)│
+## What this project includes
 
-Nginx (reverse proxy)│
-
-Backend (FastAPI + Python)│
-
-Redis (cache)│
-
-PostgreSQL / SQLite (database)
-
-
----
-
-## Project Structure
-
-Backend\_System/
-
-├── auth/ # Authentication helpers (hashing, JWT)
-
-├── cache/ # Redis client setup
-
-├── database/ # SQLAlchemy DB setup
-
-├── models/ # SQLAlchemy models├── main.py # FastAPI app
-
-├── schemas.py # Pydantic models
-
-├── requirements.txt # Python dependencies
-
-├── Dockerfile # Multi-stage Dockerfile for backend
-
-├── nginx.conf # Nginx config
-
-|── docker-compose.yml # Compose file with backend, Redis, and Nginx
-
+- FastAPI backend with endpoints for:
+  - `POST /api/signup` — create a new user
+  - `POST /api/login` — authenticate a user
+  - `GET /api/profile` — return user data for an authenticated request
+- PostgreSQL container for persistent user storage
+- Redis container for caching profile responses
+- Nginx container serving the frontend and proxying `/api/` requests to FastAPI
+- Multi-stage Docker build for a smaller backend image
 
 ---
 
-## Prerequisites
+## Architecture
 
-- Docker (>= 20.x)  
-- Docker Compose (>= 2.x)  
+- `frontend/` contains static HTML, CSS, and JavaScript
+- `nginx/nginx.conf` serves `/` from the static frontend and proxies `/api/` requests to the backend
+- `backend/` contains the FastAPI application and a Dockerfile
+- `docker-compose.yml` wires together `backend`, `db`, `redis`, and `nginx`
 
 ---
 
-## Setup & Run
+## Hosted services
 
-1. Clone the repository:
+- Frontend + Nginx: `http://localhost/`
+- API through Nginx: `http://localhost/api/`
+- Direct backend port: `http://localhost:8000/`
 
-    ```bash
-    git clone <repo-url>
-    cd Backend_System
-    docker-compose up --build
-2. Access the services:
-    
+---
 
-*   **Frontend & Nginx**: http://localhost/
-    
-*   **API via Nginx**: http://localhost/api/signup or http://localhost/api/login
+## Environment variables
 
-## CSS failure
+Create a `.env` file in the project root with values such as:
 
-**Just open private window or clear brower cookies**
+```env
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password
+POSTGRES_DB=mydatabase
+SECRET_KEY=supersecretkey
+```
 
-BY: Eslam Ragaei
+The backend uses `DATABASE_URL` if set, otherwise it defaults to:
+
+```text
+postgresql://user:password@db:5432/mydatabase
+```
+
+---
+
+## Run locally
+
+From the repository root:
+
+```bash
+docker-compose up --build
+```
+
+Then open:
+
+```text
+http://localhost/
+```
+
+---
+
+## API endpoints
+
+### Signup
+
+`POST /api/signup`
+
+Request JSON:
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+Returns a success message when registration succeeds.
+
+### Login
+
+`POST /api/login`
+
+Request JSON:
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+The backend generates a JWT token internally.
+
+### Profile
+
+`GET /api/profile`
+
+Requires the `Authorization` header:
+
+```text
+Authorization: Bearer <JWT_TOKEN>
+```
+
+Returns cached profile data from Redis when available, or loads it from PostgreSQL and caches it.
+
+---
+
+## Project structure
+
+```text
+.
+├── backend
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── app
+│       ├── auth.py
+│       ├── cache.py
+│       ├── database.py
+│       ├── main.py
+│       ├── schemas.py
+│       └── user_models.py
+├── frontend
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+├── nginx
+│   └── nginx.conf
+└── docker-compose.yml
+```
+
+---
+
+## Notes
+
+- Nginx serves the static frontend from `frontend/`
+- `/api/` calls are proxied to the backend service on port `8000`
+- Redis caches profile responses for one hour
+- The backend runs as a non-root user inside the container
+
+---
+
+## Troubleshooting
+
+- If the browser shows stale behavior, clear the browser cache or use a private/incognito window.
+- Ensure Docker and Docker Compose are installed and running.
+- If PostgreSQL connection issues occur, verify `.env` values and restart the compose stack.
+
